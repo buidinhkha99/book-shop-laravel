@@ -10,16 +10,15 @@ class Book extends Model
     use HasFactory;
 
     /**
-     * Indicates if the model's ID is auto-incrementing.
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
      * The data type of the auto-incrementing ID.
      *
      * @var string
      */
     protected $keyType = 'string';
+
+    public function category()
+    {
+        return $this->belongsToMany(Category::class, 'group_books', 'book_id', 'category_id')->as('groupbook');
+    }
+
 }

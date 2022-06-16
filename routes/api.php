@@ -23,6 +23,10 @@ Route::resource('book', 'App\Http\Controllers\BookController')->except([
     'edit', 'create'
 ]);
 
+Route::resource('categories', 'App\Http\Controllers\CategoryController')->except([
+    'edit', 'create'
+]);
+
 
 // Route::get('book/{id}', [App\Http\Controllers\BookController::class,  'show']);
 

@@ -4,27 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        $pageNumber = 1;
+        if ($request->has('page')) {
+            $pageNumber = $request->input('page');
+        }
+        try {
+            $categories = Category::paginate(2, ['*'], 'page', $pageNumber);
+        } catch (\Illuminate\Database\QueryException $exception) {
+            $errorInfo = $exception->errorInfo;
+            return response()->json([
+                'error' => $errorInfo
+            ], 500);
+        }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('book');
+        return response()->json([
+            'total' => 10,
+            'data' => $categories
+        ]);
     }
 
     /**
@@ -35,51 +42,97 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $input = $request->all();
+
+        $category = new Category;
+        $category->id = Str::uuid()->toString();
+        $category->name = $request->input('name');
+        $category->quantily = $request->input('quantily');
+        $category->image = $request->input('image');
+        $category->description = $request->input('description');
+        $category->price = $request->input('price');
+
+        try {
+            $category->save();
+        } catch (\Illuminate\Database\QueryException $exception) {
+            $errorInfo = $exception->errorInfo;
+            return response()->json([
+                'error' => $errorInfo
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => 'Save successful'
+        ]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Category  $category
+     * @param  string  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Category $category)
+    public function show($id)
     {
-        //
+        try {
+            $category = Category::find($id);
+        } catch (\Illuminate\Database\QueryException $exception) {
+            $errorInfo = $exception->errorInfo;
+            return response()->json([
+                'error' => $errorInfo
+            ], 500);
+        }
+
+        $category->id;
+        return response()->json([
+            'data' => $category
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Category $category)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Category  $category
+     * @param  string  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Category $category)
+    public function update(Request $request, string $id)
     {
-        //
+        $category = Category::find($id);
+        $category->name = $request->input('name');
+        try {
+            $category->save();
+        } catch (\Illuminate\Database\QueryException $exception) {
+            $errorInfo = $exception->errorInfo;
+            return response()->json([
+                'error' => $errorInfo
+            ], 500);
+        }
+        return response()->json([
+            'message' => 'Update successful'
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Category  $category
+     * @param  string  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Category $category)
+    public function destroy($id)
     {
-        //
+        $category = Category::find($id);
+        try {
+            $category->delete();
+        } catch (\Illuminate\Database\QueryException $exception) {
+            $errorInfo = $exception->errorInfo;
+            return response()->json([
+                'error' => $errorInfo
+            ], 500);
+        }
+        return response()->json([
+            'message' => 'Delete successful'
+        ]);
     }
 }

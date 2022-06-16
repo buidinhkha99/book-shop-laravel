@@ -10,13 +10,24 @@ class BookController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $book =  Book::orderBy('name', 'asc')
-            ->get();
+        $pageNumber = 1;
+        if ($request->has('page')) {
+            $pageNumber = $request->input('page');
+        }
+
+        try {
+            $book =  Book::paginate(2, ['*'], 'page', $pageNumber);
+        } catch (\Illuminate\Database\QueryException $exception) {
+            $errorInfo = $exception->errorInfo;
+            return response()->json([
+                'error' => $errorInfo
+            ], 500);
+        }
         return response()->json([
             'total' => 10,
             'data' => $book
@@ -71,6 +82,8 @@ class BookController extends Controller
                 'error' => $errorInfo
             ], 500);
         }
+
+        $book->category;
         return response()->json([
             'data' => $book
         ]);
